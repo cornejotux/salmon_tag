@@ -1,0 +1,66 @@
+---
+title: "Marging files"
+author: "Jorge Cornejo"
+date: "10/25/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load Libraries
+```{r message=F, warning=F}
+library(dplyr)
+library(tidyr)
+library(DT)       ## To diplay pretty tables
+library(stringr)  ## Manipulate strings
+```
+
+# Read tables
+
+I will only use 2017 as an example, later we can add them all.
+```{r}
+hw <- read.csv(file="data/CSV_s/HW17.csv")
+recover <- read.csv(file="data/CSV_s/Recover17.csv")
+resight <- read.csv(file="data/CSV_s/Resight17.csv")
+tag <- read.csv(file="data/CSV_s/Tag17.csv")
+
+datatable(head(tag))
+```
+
+Is **Tag** unique in table tag ?
+
+```{r}
+checkTag <- tag %>% 
+  group_by(TagID) %>% 
+  summarise(n=n()) %>% 
+  arrange(desc(n))
+
+datatable(checkTag)
+```
+
+I see that TagID have spaces, I will remove them in both tables!.
+
+```{r}
+tag <- tag %>% 
+  mutate(TagID = str_replace_all(tag$TagID, "[:space:]", "")) %>% 
+  select(-Tag, -Color, -X)
+
+resight <- resight %>% 
+  mutate(TagID = str_replace_all(resight$TagID, "[:space:]", ""))%>% 
+  select(-Tag, -Color)
+
+```
+
+
+# Meging Tag with resight
+
+```{r}
+tagResighted <- left_join(tag, resight, by=c("TagID"="TagID")) %>% 
+  arrange(TagID, TagDate, ResightDate)
+datatable(tagResighted)
+```
+
+
+
